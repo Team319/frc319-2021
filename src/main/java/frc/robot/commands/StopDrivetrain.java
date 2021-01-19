@@ -4,21 +4,12 @@
 
 package frc.robot.commands;
 
-import frc.robot.Robot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Robot;
 
-/** An example command that uses an example subsystem. */
-public class ExampleCommand extends CommandBase {
-  @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
-  private Timer timer = new Timer();
-
-  /**
-   * Creates a new ExampleCommand.
-   *
-   * @param subsystem The subsystem used by this command.
-   */
-  public ExampleCommand() {
+public class StopDrivetrain extends CommandBase {
+  /** Creates a new StopDrivetrain. */
+  public StopDrivetrain() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(Robot.drivetrain);
   }
@@ -26,9 +17,7 @@ public class ExampleCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Robot.drivetrain.setInputs(0.5, 0.5);
-    timer.start();
-
+    Robot.drivetrain.tankDriveVolts(0, 0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -39,12 +28,11 @@ public class ExampleCommand extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    Robot.drivetrain.setInputs(0, 0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > 5;
+    return true;
   }
 }
