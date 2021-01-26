@@ -6,13 +6,17 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
@@ -27,15 +31,39 @@ public class Drivetrain extends SubsystemBase {
   private Field2d field = new Field2d();
 
   /** Constants **/
-  public double wheelRaidus = Units.inchesToMeters(3);
-  public double trackWidth = Units.inchesToMeters(24.5);
-  public int encoderTicksPerRev = 1024;
-  public DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackWidth);
+  public static final double wheelRaidus = Units.inchesToMeters(3);
+  public static final double trackWidth = Units.inchesToMeters(24.5);
+  public static final int encoderTicksPerRev = 1024;
+  public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackWidth);
+
+  public static final double ksVolts = 0.22;
+  public static final double kvVoltSecondsPerMeter = 1.98;
+  public static final double kaVoltSecondsSquaredPerMeter = 0.2;
+
+  //kPDriveVel is the P value for tuning the control loop.
+  public static final double kPDriveVel = 8.5;
+  public static final double kMaxSpeedMetersPerSecon = 3;
+  public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+
+  public static final double kRamseteB = 2;
+  public static final double kRamseteZeta = 0.7;
 
   /** Inputs **/
   private double leftInput = 0;
   private double rightInput = 0;
 
+  private final SpeedControllerGroup leftMotors =
+  new SpeedControllerGroup(new PWMVictorSPX(1),
+                           new PWMVictorSPX(2));
+
+// The motors on the right side of the drive.
+private final SpeedControllerGroup rightMotors =
+  new SpeedControllerGroup(new PWMVictorSPX(3),
+                           new PWMVictorSPX(4));
+
+  // The robot's drive
+  private final DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
+  
   // These represent our regular encoder objects, which we would
   // create to use on a real robot.
   private Encoder leftEncoder = new Encoder(0, 1);
@@ -87,6 +115,22 @@ public class Drivetrain extends SubsystemBase {
     this.rightEncoder.reset();
     this.gyro.reset();
     this.odometry.resetPosition(newPose, gyro.getRotation2d());
+  }
+
+  public Pose2d GetPose() {
+    return this.odometry.getPoseMeters();
+  }
+
+  public DifferentialDriveWheelSpeeds GetWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(leftEncoder.getRate(), rightEncoder.getRate());
+  }
+
+  public void driveVolts(double leftVolts, double rightVolts) {
+    leftMotors.setVoltage(leftVolts);
+    rightMotors.setVoltage(rightVolts);
+    rightInput = rightVolts;
+    leftInput = leftVolts;
+    drive.feed();
   }
 
   @Override

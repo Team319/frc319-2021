@@ -28,7 +28,7 @@ public class ExampleCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    drivetrain.SetInputs(0.5, 0.5);
+    drivetrain.SetInputs(0.5, 0.55);
     timer.start();
 
   }
