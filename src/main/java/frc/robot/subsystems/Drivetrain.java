@@ -31,7 +31,7 @@ public class Drivetrain extends SubsystemBase {
   private Field2d field = new Field2d();
 
   /** Constants **/
-  public static final double wheelRaidus = Units.inchesToMeters(3);
+  public static final double wheelRadius = Units.inchesToMeters(3);
   public static final double trackWidth = Units.inchesToMeters(24.5);
   public static final int encoderTicksPerRev = 1024;
   public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackWidth);
@@ -40,7 +40,7 @@ public class Drivetrain extends SubsystemBase {
   public static final double kvVoltSecondsPerMeter = 1.98;
   public static final double kaVoltSecondsSquaredPerMeter = 0.2;
 
-  //kPDriveVel is the P value for tuning the control loop.
+  // kPDriveVel is the P value for tuning the control loop.
   public static final double kPDriveVel = 8.5;
   public static final double kMaxSpeedMetersPerSecon = 3;
   public static final double kMaxAccelerationMetersPerSecondSquared = 3;
@@ -52,18 +52,14 @@ public class Drivetrain extends SubsystemBase {
   private double leftInput = 0;
   private double rightInput = 0;
 
-  private final SpeedControllerGroup leftMotors =
-  new SpeedControllerGroup(new PWMVictorSPX(1),
-                           new PWMVictorSPX(2));
+  private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(new PWMVictorSPX(1), new PWMVictorSPX(2));
 
-// The motors on the right side of the drive.
-private final SpeedControllerGroup rightMotors =
-  new SpeedControllerGroup(new PWMVictorSPX(3),
-                           new PWMVictorSPX(4));
+  // The motors on the right side of the drive.
+  private final SpeedControllerGroup rightMotors = new SpeedControllerGroup(new PWMVictorSPX(3), new PWMVictorSPX(4));
 
   // The robot's drive
   private final DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
-  
+
   // These represent our regular encoder objects, which we would
   // create to use on a real robot.
   private Encoder leftEncoder = new Encoder(0, 1);
@@ -83,10 +79,10 @@ private final SpeedControllerGroup rightMotors =
   // when deploying code to the roboRIO.
   private AnalogGyroSim gyroSim = new AnalogGyroSim(gyro);
 
-  public DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+  public DifferentialDriveOdometry odometry;
 
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(2), 11.1111, 7.5, 60,
-      Units.inchesToMeters(3), Units.inchesToMeters(24.5),
+      wheelRadius, trackWidth,
 
       // The standard deviations for measurement noise:
       // x and y: 0.001 m
@@ -99,8 +95,11 @@ private final SpeedControllerGroup rightMotors =
   public Drivetrain() {
     SmartDashboard.putData("Field", field);
 
-    leftEncoder.setDistancePerPulse(2 * Math.PI * wheelRaidus / encoderTicksPerRev);
-    rightEncoder.setDistancePerPulse(2 * Math.PI * wheelRaidus / encoderTicksPerRev);
+    leftEncoder.setDistancePerPulse(2 * Math.PI * wheelRadius / encoderTicksPerRev);
+    rightEncoder.setDistancePerPulse(2 * Math.PI * wheelRadius / encoderTicksPerRev);
+    leftEncoder.reset();
+    rightEncoder.reset();
+    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
   }
 
   // Set the inputs for the drivetrain
