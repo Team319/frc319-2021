@@ -4,23 +4,20 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 
-public class SetOdometry extends CommandBase {
-  /** Creates a new SetOdometry. */
-  private Pose2d newPose;
-
-  public SetOdometry(Pose2d pose) {
+public class StopDrivetrain extends CommandBase {
+  /** Creates a new StopDrivetrain. */
+  public StopDrivetrain() {
     addRequirements(Robot.drivetrain);
-    this.newPose = pose;
+    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Robot.drivetrain.SetPose(newPose);
+    Robot.drivetrain.SetInputs(0, 0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
