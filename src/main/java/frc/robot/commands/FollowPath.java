@@ -21,16 +21,23 @@ public class FollowPath extends SequentialCommandGroup {
   Trajectory trajectory = new Trajectory();
 
   public FollowPath(String pathName) {
-    this(pathName, true);
+    this(pathName, true, false);
+  }
+
+  public FollowPath(String pathName, boolean stopAtEnd) {
+    this(pathName, stopAtEnd, false);
   }
 
   /** Creates a new FollowPath. */
-  public FollowPath(String pathName, boolean stopAtEnd) {
+  public FollowPath(String pathName, boolean stopAtEnd, boolean isFirst) {
     String trajectoryJSON = "trajectories/output/" + pathName + ".wpilib.json";
     try {
       Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-      addCommands(new SetOdometry(trajectory.getInitialPose()), new FollowTrajectory(trajectory));
+      if (isFirst) {
+        addCommands(new SetOdometry(trajectory.getInitialPose()));
+      }
+      addCommands(new FollowTrajectory(trajectory));
       if (stopAtEnd) {
         addCommands(new StopDrivetrain());
       }

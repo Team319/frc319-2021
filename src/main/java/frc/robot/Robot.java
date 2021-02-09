@@ -7,8 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.FollowTestPath;
-import frc.robot.commands.FollowTrenchRunBackwardsPath;
+import frc.robot.commands.trenchRun;
 import frc.robot.subsystems.Drivetrain;
 
 /**
@@ -70,7 +69,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = new FollowTrenchRunBackwardsPath();
+    m_autonomousCommand = new trenchRun();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
