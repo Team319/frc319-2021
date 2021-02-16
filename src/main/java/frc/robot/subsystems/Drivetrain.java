@@ -42,8 +42,8 @@ public class Drivetrain extends SubsystemBase {
 
   // kPDriveVel is the P value for tuning the control loop.
   public static final double kPDriveVel = 8.5;
-  public static final double kMaxSpeedMetersPerSecon = 3;
-  public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+  public static final double kMaxSpeedMetersPerSecon = 3; // 3
+  public static final double kMaxAccelerationMetersPerSecondSquared = 3; // 3
 
   public static final double kRamseteB = 2;
   public static final double kRamseteZeta = 0.7;
