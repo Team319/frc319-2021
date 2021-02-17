@@ -6,14 +6,10 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
@@ -26,6 +22,7 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.VecBuilder;
+import frc.robot.models.BobTalonFX;
 
 public class Drivetrain extends SubsystemBase {
   private Field2d field = new Field2d();
@@ -52,10 +49,15 @@ public class Drivetrain extends SubsystemBase {
   private double leftInput = 0;
   private double rightInput = 0;
 
-  private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(new PWMVictorSPX(1), new PWMVictorSPX(2));
+  private final BobTalonFX leftLead = new BobTalonFX(1);
+  private final BobTalonFX leftFollow = new BobTalonFX(2);
+  private final BobTalonFX rightLead = new BobTalonFX(3);
+  private final BobTalonFX rightFollow = new BobTalonFX(4);
+
+  private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(leftLead, leftFollow);
 
   // The motors on the right side of the drive.
-  private final SpeedControllerGroup rightMotors = new SpeedControllerGroup(new PWMVictorSPX(3), new PWMVictorSPX(4));
+  private final SpeedControllerGroup rightMotors = new SpeedControllerGroup(rightLead, rightFollow);
 
   // The robot's drive
   private final DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
@@ -130,6 +132,10 @@ public class Drivetrain extends SubsystemBase {
     rightInput = rightVolts;
     leftInput = leftVolts;
     drive.feed();
+  }
+
+  public void driveMetersPerSecond(double leftMetersPerSecond, double rightMetersPerSecond) {
+    // TODO: implement driving in meters per second
   }
 
   @Override
