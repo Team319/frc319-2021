@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
@@ -23,6 +25,9 @@ import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.VecBuilder;
 import frc.robot.models.BobTalonFX;
+import frc.robot.models.LeaderBobTalonFX;
+import frc.robot.models.PidGains;
+
 
 public class Drivetrain extends SubsystemBase {
   private Field2d field = new Field2d();
@@ -30,7 +35,8 @@ public class Drivetrain extends SubsystemBase {
   /** Constants **/
   public static final double wheelRadius = Units.inchesToMeters(3);
   public static final double trackWidth = Units.inchesToMeters(24.5);
-  public static final int encoderTicksPerRev = 1024;
+  public static final double gearRatio = 11.1111;
+  public static final int encoderTicksPerRev = 2048;
   public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackWidth);
 
   public static final double ksVolts = 0.22;
@@ -42,6 +48,9 @@ public class Drivetrain extends SubsystemBase {
   public static final double kMaxSpeedMetersPerSecon = 3; // 3
   public static final double kMaxAccelerationMetersPerSecondSquared = 3; // 3
 
+  private static final PidGains leftLeadGains = new PidGains(0, 0, 0, 0, 0, 0);
+  private static final PidGains rightLeadGains = new PidGains(0, 0, 0, 0, 0, 0);
+
   public static final double kRamseteB = 2;
   public static final double kRamseteZeta = 0.7;
 
@@ -49,10 +58,11 @@ public class Drivetrain extends SubsystemBase {
   private double leftInput = 0;
   private double rightInput = 0;
 
-  private final BobTalonFX leftLead = new BobTalonFX(1);
   private final BobTalonFX leftFollow = new BobTalonFX(2);
-  private final BobTalonFX rightLead = new BobTalonFX(3);
+  private final LeaderBobTalonFX leftLead = new LeaderBobTalonFX(1, leftFollow);
+
   private final BobTalonFX rightFollow = new BobTalonFX(4);
+  private final LeaderBobTalonFX rightLead = new LeaderBobTalonFX(3, rightFollow);
 
   private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(leftLead, leftFollow);
 
@@ -83,7 +93,7 @@ public class Drivetrain extends SubsystemBase {
 
   public DifferentialDriveOdometry odometry;
 
-  public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(2), 11.1111, 7.5, 60,
+  public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(2), gearRatio, 7.5, 60,
       wheelRadius, trackWidth,
 
       // The standard deviations for measurement noise:
@@ -102,6 +112,9 @@ public class Drivetrain extends SubsystemBase {
     leftEncoder.reset();
     rightEncoder.reset();
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+
+    this.leftLead.setGains(leftLeadGains);
+    this.rightLead.setGains(rightLeadGains);
   }
 
   // Set the inputs for the drivetrain
@@ -135,6 +148,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void driveMetersPerSecond(double leftMetersPerSecond, double rightMetersPerSecond) {
+    this.leftLead.set(TalonFXControlMode.Velocity, leftMetersPerSecond);
+    this.rightLead.set(TalonFXControlMode.Velocity, rightMetersPerSecond);
     // TODO: implement driving in meters per second
   }
 
