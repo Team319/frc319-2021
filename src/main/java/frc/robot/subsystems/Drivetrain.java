@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
@@ -28,16 +30,20 @@ import frc.robot.models.BobTalonFX;
 import frc.robot.models.LeaderBobTalonFX;
 import frc.robot.models.PidGains;
 
-
 public class Drivetrain extends SubsystemBase {
   private Field2d field = new Field2d();
 
   /** Constants **/
   public static final double wheelRadius = Units.inchesToMeters(3);
+  public static final double wheelCircumference = (2 * Math.PI * wheelRadius);
   public static final double trackWidth = Units.inchesToMeters(24.5);
   public static final double gearRatio = 11.1111;
   public static final int encoderTicksPerRev = 2048;
   public static final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(trackWidth);
+  public static final double momentOfInertia = 7.5;
+  public static final double massInKg = 60;
+  // 10 is 10 units of 100ms
+  public static final double conversionKonstant = wheelCircumference * 10 / (encoderTicksPerRev * gearRatio);
 
   public static final double ksVolts = 0.22;
   public static final double kvVoltSecondsPerMeter = 1.98;
@@ -60,6 +66,7 @@ public class Drivetrain extends SubsystemBase {
 
   private final BobTalonFX leftFollow = new BobTalonFX(2);
   private final LeaderBobTalonFX leftLead = new LeaderBobTalonFX(1, leftFollow);
+  private final TalonSRXSimCollection simSRX = new TalonSRXSimCollection(leftLead);
 
   private final BobTalonFX rightFollow = new BobTalonFX(4);
   private final LeaderBobTalonFX rightLead = new LeaderBobTalonFX(3, rightFollow);
@@ -93,8 +100,8 @@ public class Drivetrain extends SubsystemBase {
 
   public DifferentialDriveOdometry odometry;
 
-  public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(2), gearRatio, 7.5, 60,
-      wheelRadius, trackWidth,
+  public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(DCMotor.getFalcon500(2), gearRatio,
+      momentOfInertia, massInKg, wheelRadius, trackWidth,
 
       // The standard deviations for measurement noise:
       // x and y: 0.001 m
@@ -148,9 +155,9 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void driveMetersPerSecond(double leftMetersPerSecond, double rightMetersPerSecond) {
-    this.leftLead.set(TalonFXControlMode.Velocity, leftMetersPerSecond);
-    this.rightLead.set(TalonFXControlMode.Velocity, rightMetersPerSecond);
-    // TODO: implement driving in meters per second
+    this.leftLead.set(TalonFXControlMode.Velocity, leftMetersPerSecond * conversionKonstant);
+    this.rightLead.set(TalonFXControlMode.Velocity, rightMetersPerSecond * conversionKonstant);
+
   }
 
   @Override

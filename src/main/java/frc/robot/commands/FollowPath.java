@@ -37,7 +37,7 @@ public class FollowPath extends SequentialCommandGroup {
       if (setOdometry) {
         addCommands(new SetOdometry(trajectory.getInitialPose()));
       }
-      addCommands(new FollowTrajectory(trajectory));
+      addCommands(new FollowTrajExternalPID(trajectory));
       if (stopAtEnd) {
         addCommands(new StopDrivetrain());
       }
