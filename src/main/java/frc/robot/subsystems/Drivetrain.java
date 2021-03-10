@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
@@ -130,6 +129,11 @@ public class Drivetrain extends SubsystemBase {
     this.rightInput = right;
   }
 
+  public void ResetEncoders(){
+    leftLead.setSelectedSensorPosition(0);
+    rightLead.setSelectedSensorPosition(0);
+  }
+
   // Reset the pose of the robot
   public void SetPose(Pose2d newPose) {
     this.leftEncoder.reset();
@@ -143,7 +147,17 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds GetWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(leftEncoder.getRate(), rightEncoder.getRate());
+    double leftMetersPerSecond = leftLead.getSelectedSensorVelocity() / conversionKonstant;
+    double rightMetersPerSecond = rightLead.getSelectedSensorVelocity() / conversionKonstant;
+    return new DifferentialDriveWheelSpeeds(leftMetersPerSecond, rightMetersPerSecond);
+  }
+
+  public double getLeftPositionMeters(){
+    return leftLead.getSelectedSensorPosition() / conversionKonstant;
+  }
+
+  public double getRightPositionMeters(){
+    return rightLead.getSelectedSensorPosition() / conversionKonstant;
   }
 
   public void driveVolts(double leftVolts, double rightVolts) {
@@ -157,13 +171,15 @@ public class Drivetrain extends SubsystemBase {
   public void driveMetersPerSecond(double leftMetersPerSecond, double rightMetersPerSecond) {
     this.leftLead.set(TalonFXControlMode.Velocity, leftMetersPerSecond * conversionKonstant);
     this.rightLead.set(TalonFXControlMode.Velocity, rightMetersPerSecond * conversionKonstant);
-
   }
 
   @Override
   public void periodic() {
     odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
     field.setRobotPose(odometry.getPoseMeters());
+    DifferentialDriveWheelSpeeds wheelSpeeds = GetWheelSpeeds();
+    SmartDashboard.putNumber("Left m/s", wheelSpeeds.leftMetersPerSecond);
+    SmartDashboard.putNumber("Right m/s", wheelSpeeds.rightMetersPerSecond);
   }
 
   @Override
