@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
+import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.VecBuilder;
+import frc.robot.commands.ResetDriveEncoders;
 import frc.robot.models.BobTalonFX;
 import frc.robot.models.LeaderBobTalonFX;
 import frc.robot.models.PidGains;
@@ -96,6 +98,7 @@ public class Drivetrain extends SubsystemBase {
   // angle. Like EncoderSim, this does not need to be commented out
   // when deploying code to the roboRIO.
   private AnalogGyroSim gyroSim = new AnalogGyroSim(gyro);
+  private PigeonIMU pigeon = new PigeonIMU(5);
 
   public DifferentialDriveOdometry odometry;
 
@@ -129,7 +132,7 @@ public class Drivetrain extends SubsystemBase {
     this.rightInput = right;
   }
 
-  public void ResetEncoders(){
+  public void ResetEncoders() {
     leftLead.setSelectedSensorPosition(0);
     rightLead.setSelectedSensorPosition(0);
   }
@@ -139,6 +142,8 @@ public class Drivetrain extends SubsystemBase {
     this.leftEncoder.reset();
     this.rightEncoder.reset();
     this.gyro.reset();
+    this.ResetEncoders();
+    this.pigeon.setYaw(newPose.getRotation().getDegrees());
     this.odometry.resetPosition(newPose, gyro.getRotation2d());
   }
 
@@ -152,11 +157,11 @@ public class Drivetrain extends SubsystemBase {
     return new DifferentialDriveWheelSpeeds(leftMetersPerSecond, rightMetersPerSecond);
   }
 
-  public double getLeftPositionMeters(){
+  public double getLeftPositionMeters() {
     return leftLead.getSelectedSensorPosition() / conversionKonstant;
   }
 
-  public double getRightPositionMeters(){
+  public double getRightPositionMeters() {
     return rightLead.getSelectedSensorPosition() / conversionKonstant;
   }
 
@@ -173,6 +178,11 @@ public class Drivetrain extends SubsystemBase {
     this.rightLead.set(TalonFXControlMode.Velocity, rightMetersPerSecond * conversionKonstant);
   }
 
+  public void drivePercentOutput(double left, double right) {
+    this.leftLead.set(TalonFXControlMode.PercentOutput, left);
+    this.rightLead.set(TalonFXControlMode.PercentOutput, right);
+  }
+
   @Override
   public void periodic() {
     odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
@@ -180,6 +190,9 @@ public class Drivetrain extends SubsystemBase {
     DifferentialDriveWheelSpeeds wheelSpeeds = GetWheelSpeeds();
     SmartDashboard.putNumber("Left m/s", wheelSpeeds.leftMetersPerSecond);
     SmartDashboard.putNumber("Right m/s", wheelSpeeds.rightMetersPerSecond);
+    SmartDashboard.putNumber("Left m", getLeftPositionMeters());
+    SmartDashboard.putNumber("Right m", getRightPositionMeters());
+
   }
 
   @Override
